@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loan Approval — Ensemble</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1>Loan Approval Predictor</h1>
+      <p>Try Logistic, XGBoost, or the averaged Ensemble.</p>
+    </header>
+
+    <form id="loan-form">
+      <div class="grid">
+        <div class="field">
+          <label>Gender</label>
+          <select name="Gender" required>
+            <option value="" disabled selected>Choose...</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Married</label>
+          <select name="Married" required>
+            <option value="" disabled selected>Choose...</option>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Dependents</label>
+          <select name="Dependents" required>
+            <option value="" disabled selected>Choose...</option>
+            <option>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Education</label>
+          <select name="Education" required>
+            <option value="" disabled selected>Choose...</option>
+            <option>Graduate</option>
+            <option>Not Graduate</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Self Employed</label>
+          <select name="Self_Employed" required>
+            <option value="" disabled selected>Choose...</option>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Applicant Income</label>
+          <input name="ApplicantIncome" type="number" min="0" step="1" placeholder="e.g., 5000" required />
+        </div>
+
+        <div class="field">
+          <label>Coapplicant Income</label>
+          <input name="CoapplicantIncome" type="number" min="0" step="1" placeholder="e.g., 1500" required />
+        </div>
+
+        <div class="field">
+          <label>Loan Amount</label>
+          <input name="LoanAmount" type="number" min="0" step="0.01" placeholder="in thousands" required />
+        </div>
+
+        <div class="field">
+          <label>Loan Term (months)</label>
+          <input name="Loan_Amount_Term" type="number" min="12" step="6" placeholder="e.g., 360" required />
+        </div>
+
+        <div class="field">
+          <label>Credit History</label>
+          <select name="Credit_History" required>
+            <option value="" disabled selected>Choose...</option>
+            <option>Good</option>
+            <option>Bad</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Property Area</label>
+          <select name="Property_Area" required>
+            <option value="" disabled selected>Choose...</option>
+            <option>Rural</option>
+            <option>Semiurban</option>
+            <option>Urban</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Model</label>
+          <select name="model_type">
+            <option value="ensemble" selected>Ensemble (avg)</option>
+            <option value="logistic">Logistic</option>
+            <option value="xgboost">XGBoost</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn">Predict</button>
+    </form>
+
+    <section id="result" class="result hidden">
+      <h2 id="result-label">—</h2>
+      <p id="result-proba">Probability: —</p>
+    </section>
+  </div>
+
+  <script>
+    const form = document.getElementById("loan-form");
+    const resultBox = document.getElementById("result");
+    const resultLabel = document.getElementById("result-label");
+    const resultProba = document.getElementById("result-proba");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const res = await fetch("/predict", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (data.error) {
+        resultLabel.textContent = "Error";
+        resultProba.textContent = data.error;
+        resultBox.classList.remove("hidden");
+        resultBox.classList.add("error");
+        return;
+      }
+
+      resultLabel.textContent = data.label;
+      resultProba.textContent = `Probability: ${data.probability}`;
+      resultBox.classList.remove("hidden", "error");
+    });
+  </script>
+</body>
+</html>
